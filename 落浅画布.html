@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>落浅画布 - 创意绘图工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .app-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tools-container {
+            flex: 0 0 300px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        canvas {
+            background: white;
+            border-radius: 10px;
+            width: 100%;
+            height: 500px;
+            cursor: crosshair;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tool-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ff9966;
+        }
+        
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color:hover {
+            transform: scale(1.2);
+            border-color: white;
+        }
+        
+        .color.active {
+            transform: scale(1.2);
+            border-color: white;
+            box-shadow: 0 0 10px white;
+        }
+        
+        .brush-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .brush {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .brush:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .brush.active {
+            background: rgba(255, 153, 102, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 0 10px #ff9966;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+        
+        .size-display {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions h2 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .tools-container {
+                flex: 0 0 auto;
+            }
+            
+            canvas {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>落浅画布</h1>
+            <p class="subtitle">创意绘图工具 - 释放您的艺术天赋</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
+                <div class="controls">
+                    <button id="clearBtn">清除画布</button>
+                    <button id="saveBtn">保存作品</button>
+                    <button id="newCanvasBtn">新建画布</button>
+                </div>
+            </div>
+            
+            <div class="tools-container">
+                <div class="tool-section">
+                    <h2>画笔颜色</h2>
+                    <div class="color-palette">
+                        <div class="color active" style="background-color: #FF0000;" data-color="#FF0000"></div>
+                        <div class="color" style="background-color: #00FF00;" data-color="#00FF00"></div>
+                        <div class="color" style="background-color: #0000FF;" data-color="#0000FF"></div>
+                        <div class="color" style="background-color: #FFFF00;" data-color="#FFFF00"></div>
+                        <div class="color" style="background-color: #FF00FF;" data-color="#FF00FF"></div>
+                        <div class="color" style="background-color: #00FFFF;" data-color="#00FFFF"></div>
+                        <div class="color" style="background-color: #000000;" data-color="#000000"></div>
+                        <div class="color" style="background-color: #FFFFFF;" data-color="#FFFFFF"></div>
+                        <div class="color" style="background-color: #FF9966;" data-color="#FF9966"></div>
+                        <div class="color" style="background-color: #5EFF62;" data-color="#5EFF62"></div>
+                        <div class="color" style="background-color: #5E62FF;" data-color="#5E62FF"></div>
+                        <div class="color" style="background-color: #FF5E62;" data-color="#FF5E62"></div>
+                    </div>
+                </div>
+                
+                <div class="tool-section">
+                    <h2>画笔类型</h2>
+                    <div class="brush-types">
+                        <div class="brush active" data-brush="round">●</div>
+                        <div class="brush" data-brush="square">■</div>
+                        <div class="brush" data-brush="spray">✦</div>
+                        <div class="brush" data-brush="line">─</div>
+                        <div class="brush" data-brush="star">★</div>
+                        <div class="brush" data-brush="heart">❤</div>
+                    </div>
+                </div>
+                
+                <div class="tool-section">
+                    <h2>画笔设置</h2>
+                    <div class="slider-container">
+                        <label for="brushSize">画笔大小: <span id="sizeValue">10</span>px</label>
+                        <input type="range" id="brushSize" min="1" max="50" value="10">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="opacity">不透明度: <span id="opacityValue">100</span>%</label>
+                        <input type="range" id="opacity" min="10" max="100" value="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>使用说明</h2>
+            <ul>
+                <li>在画布上拖动鼠标进行绘画</li>
+                <li>从调色板中选择不同的颜色</li>
+                <li>尝试不同的画笔类型获得不同效果</li>
+                <li>调整画笔大小和不透明度</li>
+                <li>使用"清除画布"按钮重新开始</li>
+                <li>使用"保存作品"按钮下载您的创作</li>
+                <li>使用"新建画布"按钮创建空白画布</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>落浅画布</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            const clearBtn = document.getElementById('clearBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const newCanvasBtn = document.getElementById('newCanvasBtn');
+            const brushSize = document.getElementById('brushSize');
+            const sizeValue = document.getElementById('sizeValue');
+            const opacity = document.getElementById('opacity');
+            const opacityValue = document.getElementById('opacityValue');
+            
+            // 设置画布尺寸
+            function setupCanvas() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            setupCanvas();
+            window.addEventListener('resize', setupCanvas);
+            
+            // 初始化变量
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentColor = '#FF0000';
+            let currentBrush = 'round';
+            let currentSize = 10;
+            let currentOpacity = 1;
+            
+            // 颜色选择
+            document.querySelectorAll('.color').forEach(color => {
+                color.addEventListener('click', function() {
+                    document.querySelectorAll('.color').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    currentColor = this.getAttribute('data-color');
+                });
+            });
+            
+            // 画笔选择
+            document.querySelectorAll('.brush').forEach(brush => {
+                brush.addEventListener('click', function() {
+                    document.querySelectorAll('.brush').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentBrush = this.getAttribute('data-brush');
+                });
+            });
+            
+            // 画笔大小
+            brushSize.addEventListener('input', function() {
+                currentSize = this.value;
+                sizeValue.textContent = currentSize;
+            });
+            
+            // 不透明度
+            opacity.addEventListener('input', function() {
+                currentOpacity = this.value / 100;
+                opacityValue.textContent = this.value;
+            });
+            
+            // 绘画功能
+            function draw(e) {
+                if (!isDrawing) return;
+                
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = currentSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.globalAlpha = currentOpacity;
+                
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                
+                // 特殊画笔效果
+                if (currentBrush === 'spray') {
+                    sprayEffect(e.offsetX, e.offsetY);
+                } else if (currentBrush === 'star') {
+                    drawStar(e.offsetX, e.offsetY);
+                } else if (currentBrush === 'heart') {
+                    drawHeart(e.offsetX, e.offsetY);
+                }
+                
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+            
+            // 喷雾效果
+            function sprayEffect(x, y) {
+                const density = 20;
+                const radius = currentSize * 2;
+                
+                for (let i = 0; i < density; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * radius;
+                    const sprayX = x + Math.cos(angle) * distance;
+                    const sprayY = y + Math.sin(angle) * distance;
+                    const size = Math.random() * currentSize / 2 + 1;
+                    
+                    ctx.beginPath();
+                    ctx.arc(sprayX, sprayY, size, 0, Math.PI * 2);
+                    ctx.fillStyle = currentColor;
+                    ctx.fill();
+                }
+            }
+            
+            // 绘制星星
+            function drawStar(x, y) {
+                const radius = currentSize;
+                const spikes = 5;
+                const rot = Math.PI / 2 * 3;
+                const step = Math.PI / spikes;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y - radius);
+                
+                for (let i = 0; i < spikes; i++) {
+                    const xPos = x + Math.cos(rot + step * i) * radius;
+                    const yPos = y + Math.sin(rot + step * i) * radius;
+                    ctx.lineTo(xPos, yPos);
+                    
+                    const xInner = x + Math.cos(rot + step * i + step / 2) * (radius / 2);
+                    const yInner = y + Math.sin(rot + step * i + step / 2) * (radius / 2);
+                    ctx.lineTo(xInner, yInner);
+                }
+                
+                ctx.closePath();
+                ctx.fillStyle = currentColor;
+                ctx.fill();
+            }
+            
+            // 绘制心形
+            function drawHeart(x, y) {
+                const size = currentSize;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.bezierCurveTo(
+                    x, y - size / 2,
+                    x - size / 2, y - size,
+                    x - size, y - size / 2
+                );
+                ctx.bezierCurveTo(
+                    x - size * 1.5, y,
+                    x - size, y + size / 2,
+                    x, y + size
+                );
+                ctx.bezierCurveTo(
+                    x + size, y + size / 2,
+                    x + size * 1.5, y,
+                    x + size, y - size / 2
+                );
+                ctx.bezierCurveTo(
+                    x + size / 2, y - size,
+                    x, y - size / 2,
+                    x, y
+                );
+                ctx.closePath();
+                ctx.fillStyle = currentColor;
+                ctx.fill();
+            }
+            
+            // 事件监听
+            canvas.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            });
+            
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mouseout', () => isDrawing = false);
+            
+            // 触摸事件支持
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+            
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const mouseEvent = new MouseEvent('mouseup', {});
+                canvas.dispatchEvent(mouseEvent);
+            });
+            
+            // 清除画布
+            clearBtn.addEventListener('click', () => {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            });
+            
+            // 新建画布
+            newCanvasBtn.addEventListener('click', () => {
+                if (confirm('确定要创建新画布吗？当前作品将会丢失。')) {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+            });
+            
+            // 保存作品
+            saveBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = '落浅画布作品.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
